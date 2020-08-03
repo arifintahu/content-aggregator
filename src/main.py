@@ -3,7 +3,7 @@ import os
 import json
 import datetime
 
-from services.content import Content
+from src.services.content import Content
 
 class CustomFlask(Flask):
 	jinja_options = Flask.jinja_options.copy()
