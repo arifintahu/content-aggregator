@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title>Content Aggregator</title>
+		<link rel="stylesheet" type="text/css" href="%% url_for('static', filename='css/style.css') %%">
+		<link rel="icon" href="%% url_for('static', filename='favicon.ico') %%" type="image/x-icon">
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+	</head>
+	<body class="bg-light">
+		<div id="app" class="container bg-white p-5">
+			<div class="heading text-center mb-5 p-5">
+				<h1 class="font-weight-bold text-info">NEWS TODAY</h1>
+				<h5>Top News Aggregator</h5>
+			</div>
+			<div class="body">
+				<div class="date">
+					<h5 class="font-weight-bold text-secondary mb-3">Last update : {{news.date}}</h5>
+				</div>
+				<div v-for="(content, index) in news.contents" :key="index" class="content mb-5">
+					<h3 class="font-weight-bold text-secondary">{{ content.source }}</h3>
+					<div class="row">
+						<div class="col-lg-6 col-sm-12">
+							<div v-for="(article, index) in content.news.slice(0, 5)" :key="index" class="content-list">
+								<div class="title">
+									<a :href="article.url">{{ article.title }}</a>
+								</div>
+								<hr>
+							</div>
+						</div>
+						<div class="col-lg-6 col-sm-12">
+							<div v-for="(article, index) in content.news.slice(5, 10)" :key="index" class="content-list">
+								<div class="title">
+									<a :href="article.url">{{ article.title }}</a>
+								</div>
+								<hr>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="%% url_for('static', filename='js/vue.min.js') %%"></script>
+		<script type="text/javascript">
+			new Vue({
+				el: '#app',
+				data: {
+					news: null
+				},
+				mounted() {
+					this.getNews();
+				},
+				methods: {
+					getNews() {
+						fetch('/news')
+							.then(response => response.json())
+							.then(data => this.news = data);
+					}
+				}
+			});
+		</script>
+	</body>
+</html>
