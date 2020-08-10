@@ -3,7 +3,9 @@ import os
 import json
 import datetime
 
-from src.services.content import Content
+from src.services.servicenews import collectNews
+from src.services.servicecontent import getContent
+
 
 class CustomFlask(Flask):
 	jinja_options = Flask.jinja_options.copy()
@@ -24,25 +26,22 @@ def news():
 	if request.method == "GET":
 		with open('data.txt') as json_file:
 			news = json.load(json_file)
-			print(news)
 			return jsonify(news)
 
 @app.route("/aggregator", methods=["GET"])
 def aggregator():
 	if request.method == "GET":
 		portals = ["kompas.com", "tempo.co", "detik.com", "suara.com"]
-		date = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
-		contents = []
-		for i in portals:
-			t = Content(i)
-			contents.append({"source" : i, "news" : t.getContent(10)})
-		
-		output = {"date": date, "contents" : contents}
-		with open("data.txt", "w") as outfile:
-			json.dump(output, outfile)
-
+		output = collectNews(portals)
 		return jsonify(output)
 
+@app.route("/news/content", methods=["POST"])
+def content():
+	if request.method == "POST":
+		data = request.get_json()
+		url = data.get('url')
+		output = getContent(url)
+		return jsonify(output)
 
 if __name__ == "__main__":
 	app.run(debug=True)

@@ -14,38 +14,48 @@
 				<h5>Top News Aggregator</h5>
 			</div>
 			<div class="body">
-				<div class="date">
-					<h5 class="font-weight-bold text-secondary mb-3">Last update : {{news.date}}</h5>
-				</div>
-				<div v-for="(content, index) in news.contents" :key="index" class="content mb-5">
-					<h3 class="font-weight-bold text-secondary">{{ content.source }}</h3>
-					<div class="row">
-						<div class="col-lg-6 col-sm-12">
-							<div v-for="(article, index) in content.news.slice(0, 5)" :key="index" class="content-list">
-								<div class="title">
-									<a :href="article.url">{{ article.title }}</a>
-								</div>
-								<hr>
-							</div>
+				<router-view></router-view>
+			</div>
+		</div>
+<!-- 		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/vue-router/dist/vue-router.js"></script> -->
+
+		<script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+		<script src="https://cdn.jsdelivr.net/npm/vue-router@3.4.2"></script>
+		<script type="text/javascript">
+			const Main = {
+				template: `
+					<div>
+						<div class="date">
+							<h5 class="font-weight-bold text-secondary mb-3">Last update : {{news.date}}</h5>
 						</div>
-						<div class="col-lg-6 col-sm-12">
-							<div v-for="(article, index) in content.news.slice(5, 10)" :key="index" class="content-list">
-								<div class="title">
-									<a :href="article.url">{{ article.title }}</a>
+						<div v-for="(content, index) in news.contents" :key="index" class="content mb-5">
+							<h3 class="font-weight-bold text-secondary">{{ content.source }}</h3>
+							<div class="row">
+								<div class="col-lg-6 col-sm-12">
+									<div v-for="(article, index) in content.news.slice(0, 5)" :key="index" class="content-list">
+										<div class="title">
+											<router-link :to="{ name: 'content', params: {url: article.url}}">{{ article.title }}</router-link>
+										</div>
+										<hr>
+									</div>
 								</div>
-								<hr>
+								<div class="col-lg-6 col-sm-12">
+									<div v-for="(article, index) in content.news.slice(5, 10)" :key="index" class="content-list">
+										<div class="title">
+											<router-link :to="{ name: 'content', params: {url: article.url}}">{{ article.title }}</router-link>
+										</div>
+										<hr>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-			</div>
-		</div>
-		<script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
-		<script type="text/javascript">
-			new Vue({
-				el: '#app',
-				data: {
-					news: null
+				`,
+				data: function() {
+					return {
+						news: null
+					}
 				},
 				mounted() {
 					this.getNews();
@@ -57,7 +67,67 @@
 							.then(data => this.news = data);
 					}
 				}
+			};
+
+			const Content = {
+				template: `
+				<div>
+					<div v-for="(text, index) in texts" :key="index">
+						<p>{{text}}</p>
+					</div>
+				</div>
+				`,
+				props: ['url'],
+				data: function() {
+					return {
+						urlNews: this.url,
+						texts: []
+					}
+				},
+				mounted() {
+					this.getContent();
+				},
+				methods: {
+					getContent(url) {
+						fetch('/news/content', {
+								method: 'POST',
+								headers: {
+									'Accept': 'application/json',
+									'Content-Type': 'application/json'
+								},
+								body: JSON.stringify({
+									url : this.urlNews
+								})
+							})	
+							.then(response => response.json())
+							.then(data => {
+								console.log(data);
+								this.texts = data.texts;
+							});
+					}
+				}
+			};
+
+			const router = new VueRouter({
+				mode: 'history',
+				routes : [
+					{
+						path: '/',
+						component: Main,
+						name: 'main'
+					},
+					{
+						path: '/content/:url',
+						component: Content,
+						name: 'content',
+						props: true
+					}
+				]
 			});
+			
+			const app = new Vue({
+				router			
+			}).$mount('#app');
 		</script>
 	</body>
 </html>
